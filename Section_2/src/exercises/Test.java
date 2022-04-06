@@ -33,7 +33,26 @@ public class Test {
         System.out.println("Euler number e=" + Math.e);
     }
 
-    void ex11() {}
+    void ex11() {
+
+        Friends f1 = new Friends();
+        for (String f: f1.getFriends()) System.out.print(f + " ");
+        System.out.println();
+
+        Friends f2 = new Friends();
+        for (String f: f2.getFriends()) System.out.print(f + " ");
+        System.out.println();
+
+        Friends f3 = new Friends();
+        for (String f: f3.getFriends()) System.out.print(f + " ");
+        System.out.println();
+
+        Friends.setFriends(new String[]{"Vlad", "Maria", "Stefan"});
+
+        for (String f: f1.getFriends()) System.out.print(f + " "); System.out.println();
+        for (String f: f2.getFriends()) System.out.print(f + " "); System.out.println();
+        for (String f: f3.getFriends()) System.out.print(f + " "); System.out.println();
+    }
 
     public static void main(String[] args) {
 
@@ -43,5 +62,6 @@ public class Test {
         Test.ex6();
         t.ex7();
         t.ex10();
+        t.ex11();
     }
 }
