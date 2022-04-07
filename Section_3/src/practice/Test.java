@@ -1,7 +1,5 @@
 package Section_3.src.practice;
 
-import com.sun.istack.internal.NotNull;
-
 public class Test {
 
     public static void main(String[] args) {
