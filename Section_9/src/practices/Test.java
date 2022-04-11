@@ -34,10 +34,19 @@ public class Test {
 
     public static void main(String[] args) {
 
+        Programmer coder = new Programmer("");
+
+        coder.cook("Hamburger");
+
         int totalSalaries = 0;
         IEmployee employee = null;
         while (peopleMat.find()) {
             employee = Employee.createEmployee(peopleMat.group());
+
+//            if (employee instanceof Programmer prog) {
+//                System.out.println(prog.getIq());
+//            }
+
             System.out.println(employee.toString());
             totalSalaries += employee.getSalary();
         }

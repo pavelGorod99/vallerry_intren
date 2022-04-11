@@ -3,7 +3,7 @@ package Section_9.src.practices;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Programmer extends Employee {
+public class Programmer extends Employee implements Chef {
 
     private int linesOfCode = 0;
     private int yearsOfExp = 0;
@@ -25,5 +25,17 @@ public class Programmer extends Employee {
 
     public int getSalary() {
         return 3000 + linesOfCode * yearsOfExp * iq;
+    }
+
+    public int getLinesOfCode() {
+        return linesOfCode;
+    }
+
+    public int getYearsOfExp() {
+        return yearsOfExp;
+    }
+
+    public int getIq() {
+        return iq;
     }
 }
