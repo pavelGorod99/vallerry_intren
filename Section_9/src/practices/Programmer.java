@@ -1,16 +1,29 @@
 package Section_9.src.practices;
 
-import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Programmer {
+public class Programmer extends Employee {
 
-    private String firstName;
-    private String lastName;
-    private LocalDate dob;
+    private int linesOfCode = 0;
+    private int yearsOfExp = 0;
+    private int iq = 0;
 
-    String regex = "(?<lastName>\\w+),\\s*(?<firstName>\\w+),\\s*(?<dob>\\d{1,2}/\\d{1,2}/\\d{4})\\n";
-    Pattern pat = Pattern.compile(regex);
-//    Matcher mat = pat.matcher(people);
+    private final String progReex = "\\w+\\=(?<locpd>\\w+)\\,\\w+\\=(?<yoe>\\w+)\\,\\w+\\=(?<iq>\\w+)";
+    private final Pattern progPat = Pattern.compile(progReex);
+
+    public Programmer(String peopleText) {
+        super(peopleText);
+        Matcher progMat = progPat.matcher(mat.group("details"));
+
+        if (progMat.find()) {
+            linesOfCode = Integer.parseInt(progMat.group("locpd"));
+            yearsOfExp = Integer.parseInt(progMat.group("yoe"));
+            iq = Integer.parseInt(progMat.group("iq"));
+        }
+    }
+
+    public int getSalary() {
+        return 3000 + linesOfCode * yearsOfExp * iq;
+    }
 }
