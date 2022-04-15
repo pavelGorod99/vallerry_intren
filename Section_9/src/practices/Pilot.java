@@ -14,6 +14,10 @@ public class Pilot implements Flyer {
         System.out.println("Prepare for take off!");
     }
 
+    public void fly(String s1) {
+
+    }
+
     @Override
     public int getHoursFlown() {
         return hoursFlown;
