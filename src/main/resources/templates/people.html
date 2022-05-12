@@ -46,27 +46,42 @@
             </tbody>
         </table>
         <h2>People form</h2>
-        <form th:object="${person}" method="post">
+        <form th:object="${person}" method="post" novalidate>
             <div class="mb-3">
                 <label for="firstName" class="form-label">First name</label>
-                <input type="text" class="form-control" id="firstName" th:field="*{firstName}">
+                <input type="text" class="form-control" th:errorclass="is-invalid" id="firstName" th:field="*{firstName}">
+                <div id="validationFirstName" class="invalid-feedback" th:errors="*{firstName}">
+                    Please choose a username.
+                </div>
             </div>
             <div class="mb-3">
                 <label for="lastName" class="form-label">Last name</label>
-                <input type="text" class="form-control" id="lastName" th:field="*{lastName}">
+                <input type="text" class="form-control" th:errorclass="is-invalid" id="lastName" th:field="*{lastName}">
+                <div id="validationLastName" class="invalid-feedback" th:errors="*{lastName}">
+                    Please choose a username.
+                </div>
             </div>
             <div class="mb-3">
                 <label for="calendar" class="form-label">Date of birth</label>
-                <input type="date" class="form-control" id="calendar" th:field="*{dob}">
+                <input type="date" class="form-control" th:errorclass="is-invalid" id="calendar" th:field="*{dob}">
+                <div id="validationDob" class="invalid-feedback" th:errors="*{dob}">
+                    Please choose a username.
+                </div>
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" aria-describedby="emailHelp" th:field="*{email}">
+                <input type="email" class="form-control" th:errorclass="is-invalid" id="email" aria-describedby="emailHelp" th:field="*{email}">
                 <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                <div id="validationEmail" class="invalid-feedback" th:errors="*{email}">
+                    Please choose a username.
+                </div>
             </div>
             <div class="mb-3">
                 <label for="salary" class="form-label">Salary</label>
-                <input type="number" class="form-control" id="salary" th:field="*{salary}">
+                <input type="number" class="form-control" th:errorclass="is-invalid" id="salary" th:field="*{salary}">
+                <div id="validationSalary" class="invalid-feedback" th:errors="*{salary}">
+                    Please choose a username.
+                </div>
             </div>
             <button type="submit" class="btn btn-primary">Save person</button>
         </form>
