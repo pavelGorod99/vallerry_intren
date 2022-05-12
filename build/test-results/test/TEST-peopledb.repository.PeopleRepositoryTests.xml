@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="peopledb.repository.PeopleRepositoryTests" tests="16" skipped="2" failures="0" errors="0" timestamp="2022-05-10T15:44:20" hostname="DESKTOP-FTUNQ2G" time="63.882">
+  <properties/>
+  <testcase name="canSasePersonWithChildren()" classname="peopledb.repository.PeopleRepositoryTests" time="0.56"/>
+  <testcase name="canSavePersonWithHomeAddress()" classname="peopledb.repository.PeopleRepositoryTests" time="0.05"/>
+  <testcase name="testPersonIdNotFound()" classname="peopledb.repository.PeopleRepositoryTests" time="0.059"/>
+  <testcase name="canDelete()" classname="peopledb.repository.PeopleRepositoryTests" time="14.037"/>
+  <testcase name="canFindPersonByIdWithAddress()" classname="peopledb.repository.PeopleRepositoryTests" time="7.224"/>
+  <testcase name="canFindPersonById()" classname="peopledb.repository.PeopleRepositoryTests" time="7.251"/>
+  <testcase name="experiment()" classname="peopledb.repository.PeopleRepositoryTests" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="canSaveTwoPeople()" classname="peopledb.repository.PeopleRepositoryTests" time="0.03"/>
+  <testcase name="canUpdate()" classname="peopledb.repository.PeopleRepositoryTests" time="14.188"/>
+  <testcase name="canFindPersonWithHomeAddress()" classname="peopledb.repository.PeopleRepositoryTests" time="7.405"/>
+  <testcase name="canDeleteMultiplePeople()" classname="peopledb.repository.PeopleRepositoryTests" time="0.029"/>
+  <testcase name="canSavePersonWithBizAddress()" classname="peopledb.repository.PeopleRepositoryTests" time="0.023"/>
+  <testcase name="canSaveOnePerson()" classname="peopledb.repository.PeopleRepositoryTests" time="0.023"/>
+  <testcase name="canFindPersonWithBizAddress()" classname="peopledb.repository.PeopleRepositoryTests" time="7.049"/>
+  <testcase name="loadData()" classname="peopledb.repository.PeopleRepositoryTests" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="canFindPersonByIdWithChildren()" classname="peopledb.repository.PeopleRepositoryTests" time="5.941"/>
+  <system-out><![CDATA[SAVED PERSON ID = 37154957
+Person{id=37154966, firstName='Emma', lastName='Smith', dob=2010-03-10T21:00Z', salary=0', email=null'}
+Person{id=37154967, firstName='Johny', lastName='Smith', dob=2000-10-10T21:00Z', salary=0', email=null'}
+Person{id=37154965, firstName='Jenny', lastName='Smith', dob=2015-05-10T21:00Z', salary=0', email=null'}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
