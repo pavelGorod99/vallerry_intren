@@ -1,135 +1,149 @@
 package peopledb.repository;
 
+import peopledb.annotation.SQL;
+import peopledb.model.Address;
+import peopledb.model.CrudOperation;
 import peopledb.model.Person;
 
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.stream.Stream;
+import java.util.Optional;
 
-import static java.util.stream.Collectors.joining;
+import static peopledb.repository.AddressRepository.getAddress;
 
-public class PeopleRepository extends CRUDRepository<Person> {
+public class PeopleRepository extends CrudRepository<Person> {
 
-    public static final String SAVE_PERSON_SQL = "INSERT INTO PEOPLE (FIRST_NAME, LAST_NAME, DOB) VALUES (?, ?, ?)";
-    public static final String FIND_BY_ID_SQL = "SELECT ID, FIRST_NAME, LAST_NAME, DOB, SALARY FROM PEOPLE WHERE ID=?";
-    public static final String FIND_ALL_SQL = "SELECT ID, FIRST_NAME, LAST_NAME, DOB, SALARY FROM PEOPLE";
+    private AddressRepository addressRepository = null;
+
+    public static final String SAVE_PERSON_SQL = """
+        INSERT INTO PEOPLE (FIRST_NAME, LAST_NAME, DOB, SALARY, EMAIL, HOME_ADDRESS, BIZ_ADDRESS, PARENT_ID) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """;
+    public static final String FIND_BY_ID_SQL = """
+            SELECT
+            PARENT.ID AS PARENT_ID, PARENT.FIRST_NAME AS PARENT_FIRST_NAME, PARENT.LAST_NAME AS PARENT_LAST_NAME, PARENT.DOB AS PARENT_DOB, PARENT.SALARY AS PARENT_SALARY, PARENT.EMAIL AS PARENT_EMAIL,
+            CHILD.ID AS CHILD_ID, CHILD.FIRST_NAME AS CHILD_FIRST_NAME, CHILD.LAST_NAME AS CHILD_LAST_NAME, CHILD.DOB AS CHILD_DOB, CHILD.SALARY AS CHILD_SALARY, CHILD.EMAIL AS CHILD_EMAIL,
+            HOME.ID AS HOME_ID, HOME.STREET_ADDRESS AS HOME_STREET_ADDRESS, HOME.ADDRESS2 AS HOME_ADDRESS2, HOME.CITY AS HOME_CITY, HOME.STATE AS HOME_STATE, HOME.POSTCODE AS HOME_POSTCODE, HOME.COUNTY AS HOME_COUNTY, HOME.REGION AS HOME_REGION, HOME.COUNTRY AS HOME_COUNTRY,
+            BIZ.ID AS BIZ_ID, BIZ.STREET_ADDRESS AS BIZ_STREET_ADDRESS, BIZ.ADDRESS2 AS BIZ_ADDRESS2, BIZ.CITY AS BIZ_CITY, BIZ.STATE AS BIZ_STATE, BIZ.POSTCODE AS BIZ_POSTCODE, BIZ.COUNTY AS BIZ_COUNTY, BIZ.REGION AS BIZ_REGION, BIZ.COUNTRY AS BIZ_COUNTRY      \s
+            FROM PEOPLE AS PARENT
+            LEFT OUTER JOIN PEOPLE AS CHILD ON PARENT.ID = CHILD.PARENT_ID
+            LEFT OUTER JOIN ADDRESSES AS HOME ON PARENT.HOME_ADDRESS = HOME.ID
+            LEFT OUTER JOIN ADDRESSES AS BIZ ON PARENT.BIZ_ADDRESS = BIZ.ID
+            WHERE PARENT.ID = ?;
+            """;
+    public static final String FIND_ALL_SQL = """
+    SELECT 
+    PARENT.ID AS PARENT_ID, PARENT.FIRST_NAME AS PARENT_FIRST_NAME, PARENT.LAST_NAME AS PARENT_LAST_NAME, PARENT.DOB AS PARENT_DOB, PARENT.SALARY AS PARENT_SALARY, PARENT.EMAIL AS PARENT_EMAIL 
+    FROM PEOPLE AS PARENT
+    """;
+    public static final String SELECT_COUNT_SQL = "SELECT COUNT(*) FROM PEOPLE";
+    public static final String DELETE_SQL = "DELETE  FROM PEOPLE WHERE ID=?";
+    public static final String DELETE_IN_SQL = "DELETE FROM PEOPLE WHERE ID IN (:ids)";
+    public static final String UPDATE_SQL = "UPDATE PEOPLE SET FIRST_NAME=?, LAST_NAME=?, DOB=?, SALARY=? WHERE ID=?";
 
     public PeopleRepository(Connection connection) {
         super(connection);
+        addressRepository = new AddressRepository(connection);
     }
 
     @Override
+    @SQL(value = FIND_BY_ID_SQL, operationType = CrudOperation.FIND_BY_ID)
+    @SQL(value = FIND_ALL_SQL, operationType = CrudOperation.FIND_ALL)
+    @SQL(value = SELECT_COUNT_SQL, operationType = CrudOperation.COUNT)
+    @SQL(value = DELETE_SQL, operationType = CrudOperation.DELETE_ONE)
+    @SQL(value = DELETE_IN_SQL, operationType = CrudOperation.DELETE_MANY)
     Person extractEntityFromResultSet(ResultSet rs) throws SQLException {
-        long personId = rs.getLong("ID");
-        String firstName = rs.getString("FIRST_NAME");
-        String lastName = rs.getString("LAST_NAME");
-        ZonedDateTime dob = ZonedDateTime.of(rs.getTimestamp("DOB").toLocalDateTime(), ZoneId.of("+0"));
-        BigDecimal salary = rs.getBigDecimal("SALARY");
-        return new Person(personId, firstName, lastName, dob, salary);
+        Person parent;
+        Person previous_parent = null;
+        do {
+            parent = extractPerson(rs, "PARENT_").get();
+
+            if (previous_parent != null && parent.equals(previous_parent)) {
+                parent = previous_parent;
+            }
+
+            Optional<Person> child = extractPerson(rs, "CHILD_");
+
+//            String email = getValueByAlias("EMAIL", rs, String.class);
+            Address homeAddress = getAddress(rs, "HOME_");
+            Address bizAddress = getAddress(rs, "BIZ_");
+
+//            parent.setEmail(email);
+            parent.setHomeAddress(homeAddress);
+            parent.setSecondAddress(bizAddress);
+            child.ifPresent(parent::addChild);
+//            parent.addChild(child);
+
+            if (previous_parent == null || previous_parent.equals(parent)) {
+                previous_parent = parent;
+            }
+
+        } while (rs.next());
+        return parent;
+    }
+
+    private Optional<Person> extractPerson(ResultSet rs, String aliasPrefix) throws SQLException {
+        Long personId = getValueByAlias(aliasPrefix + "ID", rs, Long.class);
+        if (personId == null) {
+            return  Optional.empty();
+        }
+        String firstName = getValueByAlias(aliasPrefix + "FIRST_NAME", rs, String.class);
+        String lastName = getValueByAlias(aliasPrefix + "LAST_NAME", rs, String.class);
+        ZonedDateTime dob = ZonedDateTime.of(getValueByAlias(aliasPrefix + "DOB", rs, Timestamp.class).toLocalDateTime(), ZoneId.of("+0"));
+        BigDecimal salary = getValueByAlias(aliasPrefix + "SALARY", rs, BigDecimal.class);
+        Person person = new Person(personId, firstName, lastName, dob, salary);
+        return Optional.of(person);
     }
 
     @Override
-    protected String getFindByIdSql() {
-        return FIND_BY_ID_SQL;
+    @SQL(value = SAVE_PERSON_SQL, operationType = CrudOperation.SAVE)
+    protected void mapForSave(Person entity, PreparedStatement ps) throws SQLException {
+        ps.setString(1, entity.getFirstName());
+        ps.setString(2, entity.getLastName());
+        ps.setTimestamp(3, convertDoubleToTimestamp(entity.getDob()));
+        ps.setBigDecimal(4, entity.getSalary());
+        ps.setString(5, entity.getEmail());
+
+        addPersonAddress(entity, ps, entity.getHomeAddress(), 6);
+        addPersonAddress(entity, ps, entity.getSecondAddress(), 7);
+
+        associateChildWithParent(entity, ps);
+    }
+
+    private void associateChildWithParent(Person entity, PreparedStatement ps) throws SQLException {
+        Optional<Person> parent = entity.getParent();
+        if (parent.isPresent()) {
+            ps.setLong(8, parent.get().getId());
+        } else {
+            ps.setObject(8, null);
+        }
     }
 
     @Override
-    void mapForSave(Person entity, PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.setString(1, entity.getFirstName());
-        preparedStatement.setString(2, entity.getLastName());
-        preparedStatement.setTimestamp(3, convertDoubleToTimestamp(entity.getDob()));
+    protected void postSave(Person entity, long id) {
+        entity.getChildren().stream()
+                .forEach(this::save);
+    }
+
+    private void addPersonAddress(Person entity, PreparedStatement ps, Optional<Address> personAddress, int parameterIndex) throws SQLException {
+        Address savedAddress;
+        if (personAddress.isPresent()) {
+            savedAddress = addressRepository.save(personAddress.get());
+            ps.setLong(parameterIndex, savedAddress.ID());
+        } else {
+            ps.setObject(parameterIndex, null);
+        }
     }
 
     @Override
-    String getSaveSql() {
-        return SAVE_PERSON_SQL;
-    }
-
-//    public List<Person> findAll() {
-//        List<Person> people = new ArrayList<>();
-//        try {
-//            PreparedStatement ps = connection.prepareStatement(FIND_ALL_SQL);
-//            ResultSet rs = ps.executeQuery();
-//            while (rs.next())
-//                people.add(extractEntityFromResultSet(rs));
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return people;
-//    }
-
-    @Override
-    protected String getFindAllSql() {
-        return FIND_ALL_SQL;
-    }
-
-//    private Person extractPersonFromResultSet(ResultSet resultSet) throws SQLException {
-//        long personId = resultSet.getLong("ID");
-//        String firstName = resultSet.getString("FIRST_NAME");
-//        String lastName = resultSet.getString("LAST_NAME");
-//        ZonedDateTime dob = ZonedDateTime.of(resultSet.getTimestamp("DOB").toLocalDateTime(), ZoneId.of("+0"));
-//        BigDecimal salary = resultSet.getBigDecimal("SALARY");
-//        return new Person(personId, firstName, lastName, dob, salary);
-//    }
-
-    public long count() {
-        long count = 0;
-        try {
-            PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) FROM PEOPLE");
-            ResultSet rs = ps.executeQuery();
-            if (rs.next())
-                count = rs.getLong(1);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return count;
-    }
-
-    public void delete (Person person) {
-        try {
-            PreparedStatement ps = connection.prepareStatement("DELETE  FROM PEOPLE WHERE ID=?");
-            ps.setLong(1, person.getId());
-            int affectedRecordCount = ps.executeUpdate();
-            System.out.println(affectedRecordCount);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void delete(Person ... people) {
-//        for (Person person: people) {
-//            delete(person);
-//        }
-
-        try {
-            Statement stmt = connection.createStatement();
-
-            String ids = Stream.of(people)
-                    .map(Person::getId)
-                    .map(String::valueOf)
-                    .collect(joining(","));
-            System.out.println(ids);
-            int affectedCount = stmt.executeUpdate("DELETE FROM PEOPLE WHERE ID IN (:ids)".replace(":ids", ids));
-            System.out.println(affectedCount);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void update(Person person) {
-        try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE PEOPLE SET FIRST_NAME=?, LAST_NAME=?, DOB=?, SALARY=? WHERE ID=?");
-            ps.setString(1, person.getFirstName());
-            ps.setString(2, person.getLastName());
-            ps.setTimestamp(3, convertDoubleToTimestamp(person.getDob()));
-            ps.setBigDecimal(4, person.getSalary());
-            ps.setLong(5, person.getId());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    @SQL(value = UPDATE_SQL, operationType = CrudOperation.UPDATE)
+    protected void mapForUpdate(Person entity, PreparedStatement ps) throws SQLException {
+        ps.setString(1, entity.getFirstName());
+        ps.setString(2, entity.getLastName());
+        ps.setTimestamp(3, convertDoubleToTimestamp(entity.getDob()));
+        ps.setBigDecimal(4, entity.getSalary());
     }
 
     private Timestamp convertDoubleToTimestamp(ZonedDateTime dob) {

@@ -1,21 +1,28 @@
 package peopledb.model;
 
-import peopledb.repository.Entity;
+import peopledb.annotation.Id;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Objects;
+import java.util.*;
 
-public class Person implements Entity {
+public class Person {
 
+    @Id
     private Long id;
+
     private String firstName;
     private String lastName;
     private ZonedDateTime dob;
     private BigDecimal salary = new BigDecimal("0");
+    private String email;
+    private Optional<Address> homeAddress = Optional.empty();
+    private Optional<Address> secondAddress = Optional.empty();
+    private Set<Person> children = new HashSet<>();
+    private Optional<Person> parent = Optional.empty();
 
-    public Person(long id, String firstName, String lastName, ZonedDateTime dob, BigDecimal salary) {
+    public Person(@Id long id, String firstName, String lastName, ZonedDateTime dob, BigDecimal salary) {
         this(id, firstName, lastName, dob);
         this.salary = salary;
     }
@@ -57,15 +64,8 @@ public class Person implements Entity {
         this.dob = dob;
     }
 
-
-    @Override
     public Long getId() {
         return id;
-    }
-
-    @Override
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public BigDecimal getSalary() {
@@ -76,13 +76,23 @@ public class Person implements Entity {
         this.salary = salary;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     @Override
     public String toString() {
         return "Person{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", dob=" + dob +
+                ", dob=" + dob + '\'' +
+                ", salary=" + salary + '\'' +
+                ", email=" + email + '\'' +
                 '}';
     }
 
@@ -91,11 +101,7 @@ public class Person implements Entity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Person person = (Person) o;
-        System.out.println("*********************");
         person.dob = person.dob.withZoneSameInstant(ZoneId.of("+0")).withNano(0);
-        System.out.println(person.dob);
-        System.out.println(dob);
-        System.out.println("*********************");
         return Objects.equals(id, person.id) && firstName.equals(person.firstName) && lastName.equals(person.lastName) &&
                 dob.withZoneSameInstant(ZoneId.of("+0")).withNano(0).equals(person.dob.withZoneSameInstant(ZoneId.of("+0")));
     }
@@ -103,5 +109,38 @@ public class Person implements Entity {
     @Override
     public int hashCode() {
         return Objects.hash(id, firstName, lastName, dob);
+    }
+
+    public void setHomeAddress(Address homeAddress) {
+        this.homeAddress = Optional.ofNullable(homeAddress);
+    }
+
+    public Optional<Address> getHomeAddress() {
+        return homeAddress;
+    }
+
+    public Optional<Address> getSecondAddress() {
+        return secondAddress;
+    }
+
+    public void setSecondAddress(Address secondAddress) {
+        this.secondAddress = Optional.ofNullable(secondAddress);
+    }
+
+    public void addChild(Person child) {
+        children.add(child);
+        child.setParent(this);
+    }
+
+    public void setParent(Person parent) {
+        this.parent = Optional.ofNullable(parent);
+    }
+
+    public Optional<Person> getParent() {
+        return parent;
+    }
+
+    public Set<Person> getChildren() {
+        return children;
     }
 }
