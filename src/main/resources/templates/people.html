@@ -7,23 +7,29 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="col-8 mx-auto">
-        <table class="table">
+    <div class="col-md-8 col-sm-10 mx-auto my-5">
+        <h2>People list</h2>
+        <table class="table table-bordered table-sm">
             <thead>
             <tr>
                 <th scope="col">ID</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">First Name</th>
                 <th scope="col">DOB</th>
+                <th scope="col">Email</th>
                 <th scope="col">Salary</th>
             </tr>
             </thead>
             <tbody>
+            <tr th:if="${#lists.isEmpty(people)}">
+                <td colspan="6" class="text-center">No data</td>
+            </tr>
             <tr th:each="person : ${people}">
                 <th scope="row" th:text="${person.id}">1</th>
                 <td th:text="${person.lastName}">Mark</td>
                 <td th:text="${person.firstName}">Otto</td>
                 <td th:text="${{person.dob}}">@mdo</td>
+                <td th:text="${person.email}">@mdo</td>
                 <td th:text="${{person.salary}}">@mdo</td>
             </tr>
             <tr th:remove="all">
@@ -39,7 +45,31 @@
             </tr>
             </tbody>
         </table>
+        <h2>People form</h2>
+        <form th:object="${person}" method="post">
+            <div class="mb-3">
+                <label for="firstName" class="form-label">First name</label>
+                <input type="text" class="form-control" id="firstName" th:field="*{firstName}">
+            </div>
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Last name</label>
+                <input type="text" class="form-control" id="lastName" th:field="*{lastName}">
+            </div>
+            <div class="mb-3">
+                <label for="calendar" class="form-label">Date of birth</label>
+                <input type="date" class="form-control" id="calendar" th:field="*{dob}">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" aria-describedby="emailHelp" th:field="*{email}">
+                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+            <div class="mb-3">
+                <label for="salary" class="form-label">Salary</label>
+                <input type="number" class="form-control" id="salary" th:field="*{salary}">
+            </div>
+            <button type="submit" class="btn btn-primary">Save person</button>
+        </form>
     </div>
-
-
 </body>
+</html>
