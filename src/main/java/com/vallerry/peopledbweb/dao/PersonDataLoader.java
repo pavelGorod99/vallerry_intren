@@ -1,4 +1,4 @@
-package com.vallerry.peopledbweb.data;
+package com.vallerry.peopledbweb.dao;
 
 import com.vallerry.peopledbweb.biz.model.Person;
 import org.springframework.boot.ApplicationArguments;
@@ -21,10 +21,10 @@ public class PersonDataLoader implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         if (personRepository.count() == 0) {
             List<Person> people = List.of(
-                    new Person(null, "Jake", "Snake", LocalDate.of(1950, 1, 1),"dummy@sample.com", new BigDecimal("150000")),
-                    new Person(null, "Sarah", "Smith", LocalDate.of(1960, 2, 1),"dummy@sample.com", new BigDecimal("160000")),
-                    new Person(null, "Johnny", "Jackson", LocalDate.of(1970, 3, 1),"dummy@sample.com", new BigDecimal("170000")),
-                    new Person(null, "Bobby", "Kim", LocalDate.of(1980, 4, 1),"dummy@sample.com", new BigDecimal("180000"))
+                    new Person(null, "Jake", "Snake", LocalDate.of(1950, 1, 1),"dummy@sample.com", new BigDecimal("150000"), null),
+                    new Person(null, "Sarah", "Smith", LocalDate.of(1960, 2, 1),"dummy@sample.com", new BigDecimal("160000"), null),
+                    new Person(null, "Johnny", "Jackson", LocalDate.of(1970, 3, 1),"dummy@sample.com", new BigDecimal("170000"), null),
+                    new Person(null, "Bobby", "Kim", LocalDate.of(1980, 4, 1),"dummy@sample.com", new BigDecimal("180000"), null)
             );
             personRepository.saveAll(people);
         }
